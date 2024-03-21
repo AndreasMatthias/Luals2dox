@@ -1,0 +1,12 @@
+@page map Flowcharts
+
+Flowchart showing JSON structure and corresponding rendering functions.
+
+# Top level
+@include{doc} start.dox
+
+# Types
+@include{doc} type.dox
+
+# Variables
+@include{doc} variable.dox

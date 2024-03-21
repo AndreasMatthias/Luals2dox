@@ -1,0 +1,18 @@
+@startuml
+!theme my
+
+start
+:render_file()
+ render_section(); <<procedure>>
+switch (section . type)
+   case (type)
+      (T)
+      detach
+   case (variable)
+      (V)
+      detach
+   case (luals.config)
+      end
+endswitch
+@enduml
+

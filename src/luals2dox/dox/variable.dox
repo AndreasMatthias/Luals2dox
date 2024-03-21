@@ -1,0 +1,25 @@
+@startuml
+!theme my
+
+(V)
+:render_section_variable(); <<procedure>>
+switch (defines[] . type)
+   case (setglobal)
+      :render_setglobal(); <<procedure>>
+      switch (defines[] . extends . type)
+	 case (function)
+	    :render_function(); <<procedure>>
+	    :function; <<elem>>
+	    stop
+	 case (integer\nnumber\nstring\nboolean\ntable)
+	    :render_variable(); <<procedure>>
+	    :variable; <<elem>>
+	    stop
+      endswitch
+
+   case (doc.enum)
+      :render_enum(); <<procedure>>
+      :enum; <<elem>>
+      stop
+endswitch
+@enduml

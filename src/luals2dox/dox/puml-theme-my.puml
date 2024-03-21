@@ -1,0 +1,46 @@
+!$PRIMARY = "#446e9b"
+!$PRIMARY_DARK = "#304d6d"
+!$PRIMARY_LIGHT = "#7c9ab9"
+!$PRIMARY_TEXT = "#white"
+!$SECONDARY = "#999999"
+!$SECONDARY_DARK = "#6b6b6b"
+!$SECONDARY_LIGHT = "#b8b8b8"
+!$SECONDARY_TEXT = "#black"
+
+<style>
+activityDiagram {
+  document{
+    BackgroundColor "transparent"
+    FontSize 12
+  }
+  diamond, .json {
+    BackgroundColor "#7c9ab9-304d6d"
+    FontColor #white
+  }
+  arrow {
+    HeadColor none
+    LineThickness 3
+    LineColor $PRIMARY
+    FontStyle bold
+    FontColor $PRIMARY_LIGHT
+  }
+  start, stop, detach {
+    LineColor $PRIMARY
+    BackgroundColor $PRIMARY
+  }
+  .procedure, .prog {
+    BackgroundColor "#b8b8b8-6b6b6b"
+  }
+  .save {
+    BackgroundColor #eee
+  }
+}
+title {
+  FontSize 20
+  BorderRoundCorner 8
+  BorderThickness 1
+  BackgroundColor  $SECONDARY_LIGHT-$SECONDARY
+  FontColor $PRIMARY
+  BorderColor $SECONDARY
+}
+</style>

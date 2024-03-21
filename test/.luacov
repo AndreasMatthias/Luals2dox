@@ -1,0 +1,15 @@
+---@diagnostic disable:lowercase-global
+coveralls ={
+   pathcorrect ={
+      {"^%.%./src/", "./src/"};
+   }
+}
+
+exclude = {
+   'test',
+   'example'
+}
+
+-- Local Variables:
+-- mode: lua
+-- End:

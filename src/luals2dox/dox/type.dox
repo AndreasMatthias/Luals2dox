@@ -1,0 +1,63 @@
+@startuml
+!theme my
+
+(T)
+:render_section_type(); <<procedure>>
+switch (. defines[] . type)
+   case (doc.class)
+      :render_doc_class(); <<procedure>>
+      :render_doc_class_definition(); <<procedure>>
+      :render_doc_class_field(); <<procedure>>
+      switch (. fields[] . type)
+
+	 case (setmethod)
+            :render_setmethod(); <<procedure>>
+            floating note left
+            Colon-notation:
+            **table:method**
+            endnote
+            switch(. fields[] . extends . type)
+	       case(function)
+		  :render_class_method(); <<procedure>>
+		  :class method; <<save>>
+		  stop
+	       case()
+		  stop
+	    endswitch
+
+	 case (setfield)
+            :render_setfield(); <<procedure>>
+            floating note left
+               Dot-notation:
+               **table.field**
+            endnote
+            switch(. fields[] . extends . type)
+	       case (function)
+		  :render_class_method(); <<procedure>>
+		  :class method; <<save>>
+		  stop
+	       case (integer\nstring\n...)
+		  :render_class_variable(); <<procedure>>
+		  :class variable; <<save>>
+		  stop
+	    endswitch
+
+	 case (doc.field)
+            :render_doc_field(); <<procedure>>
+	    floating note left
+	       Self-notation:
+	       **self.field***
+	    endnote
+	    switch (. fiels[] . extends . type)
+	       case (integer\nstring\n...)
+		  :render_class_variable(); <<procedure>>
+		  :class variable; <<save>>
+		  stop
+	       case()
+		  stop
+	    endswitch
+      endswitch
+endswitch
+
+@enduml
+    

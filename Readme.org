@@ -1,0 +1,117 @@
+#+options: ^:nil
+
+* Description
+
+Luals2dox is an input filter for [[https://doxygen.nl/][Doxygen]] that filters Lua files.
+
+Lua files shall be annotated for use with LuaLS, the [[https://github.com/luals/lua-language-server][Lua Language Server]], that is a
+necessary requirement for Luals2dox.
+
+
+* Usage
+<<sec:usage>>
+
+**** Required files
+
+- ~Doxyfile~, Doxygen configuration file.
+- ~doc.json~, documentation file created by LuaLS.
+
+Put these files into your project documentation directory where you want to compile the documentation.
+
+**** File ~Doxyfile~
+
+Create a standard ~Doxyfile~ with
+#+begin_src shell
+$ doxygen -g
+#+end_src
+and edit this file as described in Section [[sec:configuration][Configuration of Doxygen]].
+
+**** File ~doc.json~
+
+Run the following command in your project documentation directory to create file ~doc.json~.
+#+begin_src shell
+$ lua-language-server --doc path/to/src/code/ --doc_out_path ./
+#+end_src
+
+**** Run ~doxygen~
+
+Run doxygen to generate the documentation.
+#+begin_src shell
+$ doxygen
+#+end_src
+
+**** Updating the documentation
+
+All you have to do to update the documentation is to rerun Doxygen. You do not need to update ~doc.json~ manually, as this is done by luals2dox automatically.
+
+
+* Configuration in Doxygen
+<<sec:configuration>>
+
+For using luals2dox in Doxygen apply the following configuration settings, either manually or by using doxywizard.
+
+** Mandatory Settings
+
+**** FILE_PATTERNS
+Add ~.lua~ file name extension to ~FILE_PATTERNS~.
+(See Section ~Expert/Input~ in /doxywizard/.)
+#+begin_src INI
+FILE_PATTERNS = *.lua
+#+end_src
+
+
+**** FILTER_PATTERNS
+Add luals2dox as a filter for ~.lua~ files.
+(See Section ~Expert/Project~ in /doxywizard/.)
+#+begin_src INI
+FILTER_PATTERNS = *.lua=luals2dox
+#+end_src
+
+**** EXTENSION_MAPPINGS
+Since luals2dox creates pseudo C++ code, you have to tell doxygen to use its C++ parser to understand ~.lua~ files.
+(See Section ~Expert/Project~ in /doxywizard/.)
+#+begin_src INI
+EXTENSION_MAPPING = .lua=C++
+#+end_src
+
+** Optional Settings
+
+**** ALIASES
+A summary page of asynchronous functions, functions marked with ~@async~ (see LuaLS annotations), can be created with the following alias.
+(See Section ~Export/Project~ in /doxywizard/.)
+#+begin_src INI
+ALIASES = "async=@xrefitem note \"Asyncronous Function\" \"Asyncronous Functions List\"
+#+end_src
+
+* Debugging
+
+** Pseudo C++ Code
+You can call ~luals2dox~ from the command line to check the pseudo C++ code that it creates.
+
+#+begin_src shell
+$ luals2dox path/to/file.lua
+#+end_src
+
+* Pitfalls to avoid
+
+** ~@~-Commands
+
+It's common to write LuaLS annotations without any whitespace characters between ~---~ and ~@~.
+E.g. ~---@param foo string~. While this works fine with LuaLS specific ~@~-commands, it doesn't work with doxygen specific ~@~-commands.
+
+The following does not work:
+#+begin_src lua
+---@code{.lua}
+--- foo = { a = 1 }
+---@endcode
+#+end_src
+In order to use doxygen specific ~@~-commands you have to put a whitespace character between ~---~ and ~@~.
+#+begin_src lua
+--- @code{.lua}
+--- foo = { a = 1 }
+--- @endcode
+#+end_src
+
+/To be more specific/: This is an issue if the comment block is passed through LuaLS' ~doc.json~ file.
+However, some comment blocks, like ~@file~, are read directly from the ~lua~ file (not via ~doc.json~), where this is not an issue. Anyway it's always save to add a whitespace character for doxygen specific ~@~-commands.
+
