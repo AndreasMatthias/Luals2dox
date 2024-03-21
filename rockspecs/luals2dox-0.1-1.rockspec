@@ -4,7 +4,7 @@ package = 'luals2dox'
 version = '0.1-1'
 source = {
    url = 'git+https://github.com/AndreasMatthias/Luals2dox.git',
-   tag = '0.1-1'
+   tag = 'v0.1-1'
 }
 
 description = {
