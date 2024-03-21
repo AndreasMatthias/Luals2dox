@@ -9,7 +9,6 @@ necessary requirement for Luals2dox.
 
 
 * Usage
-<<sec:usage>>
 
 **** Required files
 
