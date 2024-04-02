@@ -14,6 +14,7 @@ description = {
       Lua files shall be annotated for use with LuaLS, the Lua Language Server,
       that is a necessary requirement for Luals2dox.
    ]],
+   labels ={'doxygen', 'documentation'},
    homepage = 'https://github.com/AndreasMatthias/Luals2dox',
    license = 'GPLv3'
 }
