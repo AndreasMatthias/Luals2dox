@@ -1,0 +1,67 @@
+name: Luals2dox Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Luals2dox
+    - name: Install luals2dox
+      uses: actions/checkout@main
+
+    # Install Lua
+    - name: Install Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: '5.3'
+
+    # Install luarocks
+    - name: Install luarocks
+      uses: leafo/gh-actions-luarocks@v4
+
+    # Install Lua modules
+    - name: Install Lua modules
+      run: |
+        luarocks install busted
+        luarocks install argparse
+        luarocks install f-strings
+        luarocks install LPeg
+        luarocks install lua-cjson
+        luarocks install luaposix
+        luarocks install luacov
+        luarocks install luacov-console
+        luarocks install luacov-coveralls
+        luarocks install busted-htest
+        luarocks install --server=https://luarocks.org/dev luadiffer
+
+    # Install Doxygen
+    - name: Install Doxygen
+      run: sudo apt-get install doxygen
+
+    # Install Ninja
+    - name: Install Ninja Build
+      run: sudo apt-get install ninja-build
+
+    # Clone LuaLS
+    - name: Clone LuaLS
+      uses: GuillaumeFalourd/clone-github-repo-action@v2.3
+      with:
+        owner: 'LuaLS'
+        repository: 'lua-language-server'
+        branch: 'master'
+        depth: 1
+        submodule: recursive
+
+    # Compile LuaLS
+    - name: Compile LuaLS
+      run: |
+        cd lua-language-server
+        bash make.sh
+        echo "${{github.workspace}}/lua-language-server/bin/" >> $GITHUB_PATH
+
+    # Run tests
+    - name: Run tests
+      run: |
+        make test
