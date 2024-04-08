@@ -20,8 +20,8 @@
 --- @include{doc} Readme.md
 
 local cjson = require('cjson')
-local posix = require('posix')
 local fstring = require('F')
+local path = require('pl.path')
 
 local lpeg = require('lpeg')
 local ws = lpeg.S(' \n\t') ^ 0
@@ -146,18 +146,31 @@ function Doxy:set_lua_file()
    if self.args['file.lua'] == '' then
       self.arg_parser:error("missing argument 'file.lua'")
    end
-   self.lua_file = posix.realpath(self.args['file.lua']) --[[@as string]] --Lua file name.
-   if not self.lua_file then
+   self.lua_file = path.abspath(self.args['file.lua']) --[[@as string]] --Lua file name.
+   self.lua_file = self:windows_drive_letter_lowercase(self.lua_file)
+   if not path.isfile(self.lua_file) then
       self.arg_parser:error(string.format('Lua file \'%s\' not found.', self.args['file.lua']))
    end
+end
+
+
+---Convert first character of <file> to lowercase.
+---
+---The file name must be an absolute path.
+---In Windows the first character is the drive letter.
+---In Linux the first character is a slash.
+---@param file string # File name
+---@return string
+function Doxy:windows_drive_letter_lowercase(file)
+   return file:sub(1, 1):lower() .. file:sub(2)
 end
 
 
 ---Set json file (`self.json_file`) with error checking.
 ---@return nil
 function Doxy:set_json_file()
-   self.json_file = posix.realpath(self.args['json']) --[[@as string]] --JSON file name.
-   if not self.json_file then
+   self.json_file = path.abspath(self.args['json']) --[[@as string]] --JSON file name.
+   if not path.isfile(self.json_file) then
       self.arg_parser:error(string.format('JSON file \'%s\' not found.', self.args['json']))
    end
 end
@@ -180,7 +193,7 @@ end
 ---@return nil
 function Doxy:list_config()
    self:print_config_item('Binary', self.args.lua_language_server)
-   self:print_config_item('Working directory', posix.getcwd())
+   self:print_config_item('Working directory', path.currentdir())
    self:print_config_item('JSON file', self.json_file)
    for _, section in ipairs(self.doc_json) do
       if section.type == 'luals.config' then
@@ -204,9 +217,9 @@ end
 ---Update json file if currently processed lua-file is newer than json-file.
 ---@return nil
 function Doxy:update_json()
-   local stat_lua = posix.sys.stat.lstat(self.lua_file)
-   local stat_json = posix.sys.stat.lstat(self.json_file)
-   if stat_json.st_mtime < stat_lua.st_mtime then
+   local stat_lua = path.attrib(self.lua_file)
+   local stat_json = path.attrib(self.json_file)
+   if stat_json.modification < stat_lua.modification then
       os.rename(self.json_file, 'doc.json') -- LuaLS expects 'doc.json'.
       local ok, state, errno =
          os.execute(string.format('%s --doc_update > /dev/null', self.args.lua_language_server))
@@ -290,13 +303,28 @@ function Doxy:render_section(section)
 end
 
 
----Returns `true` if `file` is the currently processed lua file.
+---Return name of Operating System.
+---@return string
+function Doxy:getOS()
+   if package.config:sub(1, 1) == '\\' then
+      return 'Windows'
+   else
+      return io.popen('uname -s', 'r'):read()
+   end
+end
+
+
+---Return `true` if `file` is the currently processed lua file.
 ---@param file string # file name.
 ---@return boolean
 function Doxy:is_current_lua_file(file)
    file = self:urldecode(file)
-   file = file:gsub('^file://', '')
-   file = posix.realpath(file)
+   if self:getOS() == 'Windows' then
+      file = file:gsub('^file:///', '')
+   else
+      file = file:gsub('^file://', '')
+   end
+   file = path.abspath(file)
    if file == self.lua_file then
       return true
    else

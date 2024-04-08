@@ -2,6 +2,10 @@ require('busted.runner')({output = 'utfTerminal'})
 assert:set_parameter('TableFormatLevel', -1)
 print()
 
+package.path = '../src/?/init.lua;../src/?.lua;' .. package.path
+
+local helper = require('helper')
+
 local function pp(t)
    local pretty = require('pl.pretty')
    print(pretty.write(t))
@@ -15,22 +19,21 @@ end
 
 local say = require('say')
 local diff = require('diff')
-
-local posix = require('posix')
+local lfs = require('lfs')
 
 local checking_file = ''
 
 assert['strings_equal'] = nil
 local function strings_equal(_, argument)
-   local expected = argument[1]
-   local actual = argument[2]
+   local actual = argument[1]
+   local expected = argument[2]
    local ok, err = pcall(function() assert.are_same(expected, actual) end)
    if ok then
       return true
    else
       print(err)
-      print(string.format('\027[1;34mDiff: actual -> expected (%s)\027[1;0m', checking_file))
-      diff(expected, actual):print()
+      print(string.format('\027[1;34mDiff: passed in -> expected (%s)\027[1;0m', checking_file))
+      diff(actual, expected):print()
       return false
    end
 end
@@ -42,8 +45,8 @@ assert:register('assertion', 'strings_equal', strings_equal,
 
 
 -- Copy json file.
-posix.unlink('./doc.json')
-posix.link('./json/doc.json', './doc.json')
+os.remove('./doc.json')
+helper.copy_file('./json/doc.json', './doc.json')
 
 
 ---@param lua_filename string # Lua file name.

@@ -9,20 +9,15 @@ test: test-render.run test-unknown.run test-cli.run
 	$(MAKE) coverage-emacs
 
 %.run: %.lua $(TEST_FILES) $(PROJ_FILES) json/doc.json
-	$(color_blue)
-	@echo -e 'Running $*.lua ...'
-	$(color_default)
+	$(call echo_blue,'Running $*.lua ...')
 	lua $< $(busted_args)
 	@touch $@
 
 json/doc.json: $(TEST_FILES)
 	@rm -f ./doc.json
-	lua-language-server --doc ./ --doc_out_path ./
+	lua-language-server --doc . --doc_out_path .
 	@cp ./doc.json json/
 	@rm ./doc.md
-
-xox:
-	ls -lrt $(TEST_FILES)
 
 busted_args := --coverage --exclude-tags='skip'
 ifdef TESTS
@@ -32,34 +27,42 @@ ifdef OUTPUT
 busted_args += --output=$(OUTPUT)
 else
 busted_args += --output='htest'
+#busted_args += --output='utfTerminal' --Xoutput="--color"
 endif
 
 .PHONY: coverage coverage-emacs coverage-report
 coverage-emacs:
-	@luacov-coveralls --dryrun \
+ifneq ($(OS),Windows_NT)
+	luacov-coveralls --dryrun \
 		--output ../coverage-final.json > /dev/null
+endif
 
 coverage: coverage-report
 coverage-report:
-	@luacov-console ../
-	$(color_blue)
-	@echo "======================================================================"
-	@echo "Summary:  $(parent_dir_rel)"
-	@echo "======================================================================"
-	$(color_default)
-	@luacov-console -s | tail -n +5
-	$(color_blue)
-	@echo "======================================================================"
-	$(color_default)
+	$(luacov-console) ..
+	$(call echo_blue,"======================================================================")
+	$(call echo_blue,"Summary:  $(parent_dir_rel)")
+	$(call echo_blue,"======================================================================")
+	$(luacov-console) -s | tail -n +5
+	$(call echo_blue,"======================================================================")
 
 
 .PHONY: clean distclean
 clean:
-	rm -f doc.json doc.md
+	rm -f doc.json doc.md json/doc.json
 	rm -f test-render.run test-cli.run test-unknown.run
 	rm -f luacov.stats.out luacov.report.out luacov.report.out.index
 distclean: clean
 
-color_blue = @echo -en '\e[0;34m'
-color_blue_bold = @echo -en '\e[1;34m'
-color_default = @echo -en '\e[0m'
+define echo_blue
+	@echo [34m$(1)[0m
+endef
+
+ifeq ($(OS),Windows_NT)
+  luacov-console := cmd //c luacov-console.bat
+  luacov-coveralls := cmd //c luacov-coveralls.bat
+  MAKE := make.exe
+else
+  luacov-console := luacov-console
+  luacov-coveralls := luacov-coveralls
+endif

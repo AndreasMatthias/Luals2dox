@@ -1,0 +1,7 @@
+----------------------------
+- Running tests in Windows
+----------------------------
+
+Set output encoding in PowerShell to UTF-8 (otherwise it will output UTF-16):
+
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8

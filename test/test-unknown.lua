@@ -1,6 +1,9 @@
 require('busted.runner')({output = 'utfTerminal'})
 print()
 
+package.path = '../src/?/init.lua;../src/?.lua;' .. package.path
+
+local helper = require('helper')
 local cjson = require('cjson')
 
 local function pp(t)
@@ -14,8 +17,7 @@ for idx = 1, #arg do
    arg[idx] = nil
 end
 
-local posix = require('posix')
-
+local path = require('pl.path')
 
 local function make_json_file(content)
    -- Read JSON file
@@ -25,7 +27,7 @@ local function make_json_file(content)
    -- Append JSON data
    json[#json + 1] = content
    -- Write JSON file
-   posix.unlink('./doc.json')
+   os.remove('./doc.json')
    fd = assert(io.open('./doc.json', 'w'))
    fd:write(cjson.encode(json))
    fd:close()
@@ -49,6 +51,28 @@ local function test(json, warning_msg)
 end
 
 
+local function getOS()
+   if package.config:sub(1, 1) == '\\' then
+      return 'Windows'
+   else
+      return io.popen('uname -s', 'r'):read()
+   end
+end
+
+
+local function fileURL(rel_path)
+   if getOS() == 'Windows' then
+      local cwd = path.abspath('.')
+      cwd = cwd:sub(1, 1):lower() .. cwd:sub(2)
+      cwd = cwd:gsub('\\', '/')
+      return 'file:///' .. cwd .. '/' .. rel_path
+   else
+      local cwd = path.abspath('.')
+      return 'file://' .. cwd .. '/./' .. rel_path
+   end
+end
+
+
 describe('JSON file:', function()
    assert:set_parameter('TableFormatLevel', 0)
 
@@ -57,7 +81,7 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = 'file://' .. posix.realpath('./') .. '/./var/var-01.lua',
+                  ['file'] = fileURL('var/var-01.lua'),
                   ['type'] = 'XXX'
                }
             },
@@ -71,13 +95,13 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = 'file://' .. posix.realpath('./') .. '/./var/var-01.lua',
+                  ['file'] = fileURL('var/var-01.lua'),
                   ['type'] = 'doc.class'
                }
             },
             ['fields'] = {
                {
-                  ['file'] = 'file://' .. posix.realpath('./') .. '/./var/var-01.lua',
+                  ['file'] = fileURL('var/var-01.lua'),
                   ['type'] = 'XXX'
                }
             },
@@ -91,13 +115,13 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = 'file://' .. posix.realpath('./') .. '/./var/var-01.lua',
+                  ['file'] = fileURL('var/var-01.lua'),
                   ['type'] = 'doc.class'
                }
             },
             ['fields'] = {
                {
-                  ['file'] = 'file://' .. posix.realpath('./') .. '/./var/var-01.lua',
+                  ['file'] = fileURL('var/var-01.lua'),
                   ['type'] = 'setmethod',
                   ['extends'] = {
                      ['type'] = 'XXX'
@@ -114,13 +138,13 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = 'file://' .. posix.realpath('./') .. '/./var/var-01.lua',
+                  ['file'] = fileURL('var/var-01.lua'),
                   ['type'] = 'doc.class'
                }
             },
             ['fields'] = {
                {
-                  ['file'] = 'file://' .. posix.realpath('./') .. '/./var/var-01.lua',
+                  ['file'] = fileURL('var/var-01.lua'),
                   ['type'] = 'doc.field',
                   ['extends'] = {
                      ['type'] = 'XXX'
@@ -137,7 +161,7 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = 'file://' .. posix.realpath('./') .. '/./var/var-01.lua',
+                  ['file'] = fileURL('var/var-01.lua'),
                   ['type'] = 'doc.enum'
                }
             },
@@ -151,7 +175,7 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = 'file://' .. posix.realpath('./') .. '/./var/var-01.lua',
+                  ['file'] = fileURL('var/var-01.lua'),
                   ['type'] = 'doc.class',
                   ['extends'] = {
                      {

@@ -1,0 +1,30 @@
+{
+    "Lua": {
+	"workspace": {
+	    "library": [
+		"${3rd}/luassert",
+                "${3rd}/luassert/library",
+		"${3rd}/busted",
+		"${3rd}/tex-luatex/library/"
+	    ]
+	},
+	"diagnostics": {
+	    "globals": [
+		"lfs"
+	    ],
+	    "disable": [
+		"duplicate-set-field"
+	    ]
+	},
+	"hint": {
+	    "enable": false
+	},
+	"hover": {
+	    "expandAlias": false
+	},
+	"completion": {
+	    "showWord": "Disable",
+	    "workspaceWord": false
+	}
+    }
+}

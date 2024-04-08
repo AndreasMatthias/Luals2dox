@@ -1,0 +1,21 @@
+[*.lua]
+
+indent_style = space
+indent_size = 3
+
+continuation_indent = 3
+continuation_indent.before_block = 3
+continuation_indent.in_expr = 3
+continuation_indent.in_table = 3
+
+align_function_params = true
+quote_style = single
+insert_final_newline = true
+space_around_table_field_list = false
+line_space_after_function_statement = fixed(3)
+
+
+
+# Local Variables:
+# mode: conf-unix
+# End:

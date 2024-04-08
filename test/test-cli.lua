@@ -2,7 +2,9 @@ require('busted.runner')({output = 'utfTerminal'})
 assert:set_parameter('TableFormatLevel', -1)
 print()
 
-local posix = require('posix')
+package.path = '../src/?/init.lua;../src/?.lua;' .. package.path
+
+local helper = require('helper')
 
 local pretty = require('pl.pretty')
 local function pp(t)
@@ -16,10 +18,7 @@ for idx = 1, #arg do
 end
 
 
-local function test(cli_args, json_file, do_print)
-   -- Copy json file.
-   posix.unlink('./doc.json')
-   posix.link(json_file, './doc.json')
+local function test(cli_args)
    -- Reset arg.
    for i = 1, #arg do
       arg[i] = nil
@@ -40,67 +39,91 @@ end
 
 
 describe('CLI arguments:', function()
-   it('Lua file missing/not found', function()
+   it('XXXLua file missing/not found', function()
+      helper.copy_file('./json/doc.json', './doc.json')
       assert.has_error(
-         function() test({}, './json/doc.json') end,
+         function() test({}) end,
          "missing argument 'file.lua'")
       assert.has_error(
-         function() test({'file_does_not_exist.lua'}, './json/doc.json') end,
+         function() test({'file_does_not_exist.lua'}) end,
          "Lua file 'file_does_not_exist.lua' not found.")
+      helper.sleep(1)
+      assert(os.remove('./doc.json'))
    end)
 
    it('--list-config', function()
+      helper.copy_file('./json/empty.json', './doc.json')
       local print_stub = stub(_G, 'print')
       assert.has_error(
-         function() test({'-l'}, './json/empty.json') end,
+         function() test({'-l'}) end,
          "Section 'luals.config' missing in JSON file.")
       assert.has_error(
-         function() test({'--list-config'}, './json/empty.json') end,
+         function() test({'--list-config'}) end,
          "Section 'luals.config' missing in JSON file.")
+
+      helper.copy_file('./json/doc.json', './doc.json')
       assert.has_no_error(
-         function() test({'-l'}, './json/doc.json') end)
+         function() test({'-l'}) end)
       print_stub:revert()
+      helper.sleep(1)
+      assert(os.remove('./doc.json'))
    end)
 
    it('JSON file not found', function()
       assert.has_error(
-         function() test({}, './does/not/exist/doc.json') end,
+         function() test({'./var/var-01.lua'}) end,
          "JSON file './doc.json' not found.")
    end)
 
    it('Cannot open JSON file', function()
-      posix.unlink('./doc.json')
-      local json_file = './json/access.json'
-      io.open(json_file, 'w'):close()
-      posix.chmod(json_file, '000')
+      local function test_here()
+         helper.copy_file('json/doc.json', 'doc.json')
+         arg[1] = './var/var-01.lua'
+         -- Mock error function of argparse.
+         local args = require('luals2dox.args')
+         ---@diagnostic disable-next-line: unused-local
+         getmetatable(args).error = function(self, msg)
+            error(msg)
+         end
+         -- Run luals2dox.
+         local l2d = require('luals2dox')
+         local doxy = assert(l2d:new())
+         helper.sleep(1)
+         assert(os.remove('./doc.json'))
+         doxy:load_json_file()
+      end
+
       assert.has_error(
-         function() test({}, './json/access.json') end,
+         function() test_here() end,
          "Cannot open file './doc.json'.")
-      posix.unlink(json_file)
    end)
 
    it('Update JSON file', function()
       -- For code coverage statistics we want to run the part of the code
       -- that updated `doc.json`. This is the only reason for this test.
+      helper.copy_file('./json/doc.json', './doc.json')
       local tmp_lua_file = './var/_tmp_file.lua'
-      posix.sleep(1)
       io.open('./var/_tmp_file.lua', 'w'):close()
       assert.has_no_error(
-         function() test({tmp_lua_file}, './json/doc.json') end)
-      posix.unlink(tmp_lua_file)
+         function() test({tmp_lua_file}) end)
+      helper.sleep(1)
+      assert(os.remove(tmp_lua_file))
+      helper.sleep(1)
    end)
 
    it('--lua-language-server', function()
+      helper.copy_file('./json/doc.json', './doc.json')
       local tmp_lua_file = './var/_tmp_file.lua'
-      posix.sleep(1)
-      io.open('./var/_tmp_file.lua', 'w'):close()
-      assert.has_error(
+      helper.sleep(1)
+      io.open(tmp_lua_file, 'w'):close()
+      assert.error_matches(
          function()
-            test({'--lua-language-server', 'wrong-binary', tmp_lua_file},
-               './json/doc.json')
+            test({'--lua-language-server', 'wrong-binary', tmp_lua_file})
          end,
-         string.format('Updating JSON file failed (exit, 127).'))
-      posix.unlink(tmp_lua_file)
+         'Updating JSON file failed %(exit, %d+%).')
+      helper.sleep(1)
+      assert(os.remove(tmp_lua_file))
+      assert(os.remove('./doc.json'))
    end)
 
    it('--all-files', function()

@@ -1,0 +1,113 @@
+name: Luals2dox Tests
+
+on: [push, pull_request]
+
+jobs:
+  Tests:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+    # Setup MSVC
+    - name: Setup MSVC
+      if: ${{ runner.os == 'Windows' }}
+      uses: ilammy/msvc-dev-cmd@v1
+
+    # # Install Lua
+    # - name: Install Lua
+    #   uses: leafo/gh-actions-lua@v10
+    #   with:
+    #     luaVersion: '5.3'
+
+    # # Install luarocks
+    # - name: Install luarocks
+    #   uses: leafo/gh-actions-luarocks@v4
+    #   with:
+    #     luarocksVersion: '3.11.0'
+
+    # Install Lua
+    - name: Install Lua
+      uses: hishamhm/gh-actions-lua@master
+      with:
+        luaVersion: '5.3'
+
+    # Install luarocks
+    - name: Install luarocks
+      uses: hishamhm/gh-actions-luarocks@master
+      with:
+        luarocksVersion: '3.11.0'
+
+    # Install Lua modules
+    - name: Install Lua modules
+      run: |
+        luarocks install busted
+        luarocks install argparse
+        luarocks install f-strings
+        luarocks install lpeg
+        luarocks install lua-cjson
+        luarocks install luacov
+        luarocks install luacov-console
+        luarocks install luacov-coveralls
+        luarocks install busted-htest
+        luarocks install --server=https://luarocks.org/dev luadiffer
+
+    # Install Ninja
+    - name: Install Ninja
+      uses: urkle/action-get-ninja@v1
+
+    # Clone LuaLS
+    - name: Clone LuaLS
+      uses: actions/checkout@v4
+      with:
+        repository: LuaLS/lua-language-server
+        ref: master
+        submodules: recursive
+        path: LuaLS
+
+    # Compile LuaLS
+    - name: Compile LuaLS
+      if: ${{ runner.os == 'Linux' || runner.os == 'MacOS' }}
+      run: |
+        cd LuaLS
+        bash make.sh
+        echo "${{github.workspace}}/LuaLS/bin/" >> $GITHUB_PATH
+
+    # Compile LuaLS
+    # Compiling without tests. LuaLS tests are currently not working in Windows.
+    - name: Compile LuaLS
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        cd LuaLS
+        git submodule update --init --recursive
+        cd 3rd\luamake
+        cmd.exe /c compile\install.bat
+        cd ..\..
+        3rd\luamake\luamake.exe clean
+        3rd\luamake\luamake.exe all
+        Add-Content $env:GITHUB_PATH "${{ github.workspace }}/LuaLS/bin"
+
+    # Install Cygwin
+    - name: Install Cygwin
+      if: ${{ runner.os == 'Windows' }}
+      uses: egor-tensin/setup-cygwin@v4
+      with:
+        packages: make
+
+    # Luals2dox
+    - name: Install luals2dox
+      uses: actions/checkout@main
+      with:
+        path: luals2dox
+
+    # Run tests
+    - name: Run tests
+      run: |
+        cd ${{ github.workspace }}/luals2dox
+        make clean
+        make test
