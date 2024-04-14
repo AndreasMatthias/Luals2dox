@@ -21,7 +21,38 @@
 
 local cjson = require('cjson')
 local fstring = require('F')
-local path = require('pl.path')
+
+local fs
+local has_luaposix = pcall(require, 'posix')
+if has_luaposix then
+   local posix = require('posix')
+   fs = {
+      realpath = posix.realpath,
+      getcwd = posix.getcwd,
+      lstat_mtime = function(file)
+         return posix.sys.stat.lstat(file).st_mtime
+         end,
+      isfile = function(file)
+         if not file then
+            return false
+         else
+            local stat = posix.stat(file)
+            return stat and stat.type == 'regular'
+         end
+      end,
+   }
+else
+   local path = require('pl.path')
+   fs = {
+      realpath = path.abspath,
+      getcwd = path.currentdir,
+      lstat_mtime = function(file)
+         return path.attrib(file).modification
+      end,
+      isfile = path.isfile,
+   }
+end
+
 
 local lpeg = require('lpeg')
 local ws = lpeg.S(' \n\t') ^ 0
@@ -127,6 +158,13 @@ function Doxy:init()
       self:list_config()
       return
    end
+   if self:getOS() == 'Windows' then
+      self.file_scheme = '^file:///'
+      self.dev_null = 'null'
+   else
+      self.file_scheme = '^file://'
+      self.dev_null = '/dev/null'
+   end
    self:set_lua_file()
    self:update_json()
 end
@@ -140,15 +178,26 @@ function Doxy:info(str)
 end
 
 
+---Return name of Operating System.
+---@return string
+function Doxy:getOS()
+   if package.config:sub(1, 1) == '\\' then
+      return 'Windows'
+   else
+      return io.popen('uname -s', 'r'):read()
+   end
+end
+
+
 ---Set lua file (`self.lua_file`) with error checking.
 ---@return nil
 function Doxy:set_lua_file()
    if self.args['file.lua'] == '' then
       self.arg_parser:error("missing argument 'file.lua'")
    end
-   self.lua_file = path.abspath(self.args['file.lua']) --[[@as string]] --Lua file name.
+   self.lua_file = fs.realpath(self.args['file.lua']) --[[@as string]] --Lua file name.
    self.lua_file = self:windows_drive_letter_lowercase(self.lua_file)
-   if not path.isfile(self.lua_file) then
+   if not fs.isfile(self.lua_file) then
       self.arg_parser:error(string.format('Lua file \'%s\' not found.', self.args['file.lua']))
    end
 end
@@ -162,15 +211,15 @@ end
 ---@param file string # File name
 ---@return string
 function Doxy:windows_drive_letter_lowercase(file)
-   return file:sub(1, 1):lower() .. file:sub(2)
+   return file and file:sub(1, 1):lower() .. file:sub(2)
 end
 
 
 ---Set json file (`self.json_file`) with error checking.
 ---@return nil
 function Doxy:set_json_file()
-   self.json_file = path.abspath(self.args['json']) --[[@as string]] --JSON file name.
-   if not path.isfile(self.json_file) then
+   self.json_file = fs.realpath(self.args['json']) --[[@as string]] --JSON file name.
+   if not fs.isfile(self.json_file) then
       self.arg_parser:error(string.format('JSON file \'%s\' not found.', self.args['json']))
    end
 end
@@ -193,7 +242,7 @@ end
 ---@return nil
 function Doxy:list_config()
    self:print_config_item('Binary', self.args.lua_language_server)
-   self:print_config_item('Working directory', path.currentdir())
+   self:print_config_item('Working directory', fs.getcwd())
    self:print_config_item('JSON file', self.json_file)
    for _, section in ipairs(self.doc_json) do
       if section.type == 'luals.config' then
@@ -217,12 +266,14 @@ end
 ---Update json file if currently processed lua-file is newer than json-file.
 ---@return nil
 function Doxy:update_json()
-   local stat_lua = path.attrib(self.lua_file)
-   local stat_json = path.attrib(self.json_file)
-   if stat_json.modification < stat_lua.modification then
+   local stat_lua = fs.lstat_mtime(self.lua_file)
+   local stat_json = fs.lstat_mtime(self.json_file)
+   if stat_json < stat_lua then
       os.rename(self.json_file, 'doc.json') -- LuaLS expects 'doc.json'.
       local ok, state, errno =
-         os.execute(string.format('%s --doc_update > /dev/null', self.args.lua_language_server))
+         os.execute(string.format('%s --doc_update > %s',
+                                  self.args.lua_language_server,
+                                  self.dev_null))
       if not ok then
          os.rename('doc.json', self.json_file)
          self.arg_parser:error(string.format(
@@ -303,28 +354,13 @@ function Doxy:render_section(section)
 end
 
 
----Return name of Operating System.
----@return string
-function Doxy:getOS()
-   if package.config:sub(1, 1) == '\\' then
-      return 'Windows'
-   else
-      return io.popen('uname -s', 'r'):read()
-   end
-end
-
-
 ---Return `true` if `file` is the currently processed lua file.
 ---@param file string # file name.
 ---@return boolean
 function Doxy:is_current_lua_file(file)
    file = self:urldecode(file)
-   if self:getOS() == 'Windows' then
-      file = file:gsub('^file:///', '')
-   else
-      file = file:gsub('^file://', '')
-   end
-   file = path.abspath(file)
+   file = file:gsub(self.file_scheme, '')
+   file = fs.realpath(file)
    if file == self.lua_file then
       return true
    else

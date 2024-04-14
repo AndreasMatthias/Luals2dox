@@ -21,14 +21,14 @@ local path = require('pl.path')
 
 local function make_json_file(content)
    -- Read JSON file
-   local fd = assert(io.open('./json/doc.json'))
+   local fd = assert(io.open('json/doc.json'))
    local json = cjson.decode(fd:read('*a'))
    fd:close()
    -- Append JSON data
    json[#json + 1] = content
    -- Write JSON file
-   os.remove('./doc.json')
-   fd = assert(io.open('./doc.json', 'w'))
+   helper.remove_file('doc.json')
+   fd = assert(io.open('doc.json', 'w'))
    fd:write(cjson.encode(json))
    fd:close()
 end

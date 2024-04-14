@@ -45,8 +45,8 @@ assert:register('assertion', 'strings_equal', strings_equal,
 
 
 -- Copy json file.
-os.remove('./doc.json')
-helper.copy_file('./json/doc.json', './doc.json')
+os.remove('doc.json')
+helper.link_file('json/doc.json', 'doc.json')
 
 
 ---@param lua_filename string # Lua file name.
