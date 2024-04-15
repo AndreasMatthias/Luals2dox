@@ -15,10 +15,17 @@ doc:
 	lua-language-server --doc ./ --doc_out_path ./
 	doxygen
 
+
+rockspec_latest := rockspecs/$(shell ls -v rockspecs/ | tail -n2 | head -n1)
+rockspec_dev := rockspecs/$(shell ls -v rockspecs/ | tail -n1)
+
 .PHONY: install uninstall
 install:
 	rm -f doc.md
-	luarocks make
+	luarocks make $(rockspec_latest)
+install-dev:
+	rm -f doc.md
+	luarocks make $(rockspec_dev)
 uninstall:
 	luarocks remove luals2dox
 

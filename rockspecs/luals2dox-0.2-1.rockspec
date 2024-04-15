@@ -1,5 +1,7 @@
 ---@diagnostic disable: lowercase-global
 
+rockspec_format = '3.0'
+
 package = 'luals2dox'
 version = '0.2-1'
 source = {
