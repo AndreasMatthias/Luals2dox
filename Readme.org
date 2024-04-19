@@ -73,6 +73,26 @@ Since luals2dox creates pseudo C++ code, you have to tell doxygen to use its C++
 EXTENSION_MAPPING = .lua=C++
 #+end_src
 
+** LaTeX Output
+
+**** Unicode characters
+
+Luals2dox uses Unicode characters that are not defined in LaTeX by default. Therefore it's necessary
+to define these characters in a user defined LaTeX style file, e.g. ~mystyle.sty~.
+(See Section ~Expert/LaTeX~ in /doxywizard/.)
+
+#+begin_src INI
+LATEX_EXTRA_STYLESHEET = mystyle.sty
+#+end_src
+
+File ~mystyle.sty~ shall contain the following definitions:
+
+#+begin_src LaTeX
+\DeclareUnicodeCharacter{2772}{[}
+\DeclareUnicodeCharacter{2773}{]}
+#+end_src
+
+
 ** Optional Settings
 
 **** ALIASES
