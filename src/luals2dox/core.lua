@@ -92,6 +92,7 @@ end
 local function sanitize_type(str)
    str = str:gsub(',', '‚')
    str = str:gsub(':', '→')
+   str = str:gsub('%.', '::')
    str = str:gsub('|', ' ¦ ')
    str = str:gsub('%[', '❲')
    str = str:gsub('%]', '❳')

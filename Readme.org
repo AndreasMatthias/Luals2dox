@@ -45,7 +45,6 @@ All you have to do to update the documentation is to rerun Doxygen. You do not n
 
 
 * Configuration in Doxygen
-<<sec:configuration>>
 
 For using luals2dox in Doxygen apply the following configuration settings, either manually or by using doxywizard.
 
