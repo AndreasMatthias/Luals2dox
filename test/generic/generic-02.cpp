@@ -1,4 +1,9 @@
+/// @diagnostic disable:lowercase-global
 /// @file
+
+/// @class MyArray<T>: { [integer]: T }
+
+/// @class MyDictionary<T>: { [string]: T }
 
 ///
 /// @class MyArray

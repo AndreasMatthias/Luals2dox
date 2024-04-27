@@ -1,3 +1,4 @@
+/// @diagnostic disable:lowercase-global
 /// @file
 
 /// @brief This is the short description.

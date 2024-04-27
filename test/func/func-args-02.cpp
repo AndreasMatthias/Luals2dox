@@ -1,3 +1,4 @@
+/// @diagnostic disable:lowercase-global
 /// @file
 /// Same function names as in `func-args-01.lua`.
 

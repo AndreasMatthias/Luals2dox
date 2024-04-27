@@ -1,5 +1,7 @@
 /// @file
 
+/// @diagnostic disable lowercase:local
+
 /// @brief
 /// @param cnt (integer) Counter.
 /// @returns (integer) 

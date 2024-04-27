@@ -1,3 +1,4 @@
+/// @diagnostic disable:lowercase-global
 /// @file
 /// Same variable names as in `var-01.lua`.
 

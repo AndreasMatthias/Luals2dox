@@ -160,11 +160,11 @@ function Doxy:init()
       return
    end
    if self:getOS() == 'Windows' then
-      self.file_scheme = '^file:///'
-      self.dev_null = 'null'
+      self.file_scheme = '^file:///' --- File scheme
+      self.device_null = 'null' --- Device null
    else
       self.file_scheme = '^file://'
-      self.dev_null = '/dev/null'
+      self.device_null = '/dev/null'
    end
    self:set_lua_file()
    self:update_json()
@@ -204,7 +204,7 @@ function Doxy:set_lua_file()
 end
 
 
----Convert first character of <file> to lowercase.
+---Convert first character of `file` to lowercase.
 ---
 ---The file name must be an absolute path.
 ---In Windows the first character is the drive letter.
@@ -274,7 +274,7 @@ function Doxy:update_json()
       local ok, state, errno =
          os.execute(string.format('%s --doc_update > %s',
                                   self.args.lua_language_server,
-                                  self.dev_null))
+                                  self.device_null))
       if not ok then
          os.rename('doc.json', self.json_file)
          self.arg_parser:error(string.format(
@@ -333,7 +333,7 @@ function Doxy:render_file()
    if self.args.all_files then
       content = '/// @file\n\n'
    end
-   content = content .. self:copy_doxy_commands()
+   content = content .. self:copy_comment_blocks()
    for _, section in ipairs(self.doc_json) do
       content = content .. self:render_section(section)
    end
@@ -846,83 +846,52 @@ function Doxy:render_variable(section, name)
 end
 
 
----Copy commands (chunks) directly for lua file.
----
----This is for doxygen commands (markups) that are not included in the json file,
----but copied directly from the lua file.
----@return string
-function Doxy:copy_doxy_commands()
-   local fd = assert(io.open(self.lua_file, 'r'))
-   local content = ''
-   for _, cmd in ipairs({'@file', '@defgroup', '@addtogroup', '@mainpage'}) do
-      content = content .. self:copy_doxy_command(fd, cmd)
-   end
-   fd:close()
-   return content
-end
-
-
----Copy doxygen command from lua file.
----@param fd file* # File descriptor.
----@param command string # Doxygen command.
----@return string
-function Doxy:copy_doxy_command(fd, command)
-   local content = ''
-   local text
-   local continue = false
-   fd:seek('set')
-   for line in fd:lines() do
-      text, continue = self:copy_doxy_command_2(line, continue, command)
-      content = content .. text
-   end
-   if content ~= '' then
-      content = content .. '~~~~~~\n'
-   end
-   return trim(content)
-end
-
-
 --- Captures comment without comment sign "`---`".
 local comment_pattern = (
    ws * lpeg.P('---') *
    ws * lpeg.C(lpeg.P(1) ^ 0))
 
 
----Helper function for copy_doxy_command_defgroup().
----@return string
----@return boolean
-function Doxy:copy_doxy_command_2(line, continue, command)
-   if not continue then
-      local command_pattern = self:make_pattern(command)
-      local capture = command_pattern:match(line)
-      if capture then
-         local content = f '/// {command}{capture}\n'
-         return content, true
-      else
-         return '', false
-      end
-   else
-      local capture = comment_pattern:match(line)
-      if capture == '' then
-         capture = '~~~~~~'
-      end
-      if capture then
-         local content = f '/// {capture}\n'
-         return content, true
-      else
-         return '', false
+---Copy comment blocks.
+---
+---Comment blocks are one or more comment lines that start and
+---end with a blank line. For the very first comment block of
+---a file the starting blank line is optional.
+function Doxy:copy_comment_blocks()
+   local function is_blank(line)
+      return line:match('^%s*$')
+   end
+   local fd = assert(io.open(self.lua_file, 'r'))
+   local content = ''
+   local block = ''
+   local block_started = true
+   for line in fd:lines() do
+      if block_started then
+         local comment = comment_pattern:match(line)
+         if comment then
+            ---comment line
+            if comment == '' then
+               block = block .. '/// ~~~~~~\n'
+            else
+               block = block .. f '/// {comment}\n'
+            end
+         elseif is_blank(line) then
+            ---blank line
+            if block ~= '' then
+               content = content .. block .. '~~~~~~\n'
+            end
+            block = ''
+         else
+            ---code line
+            block = ''
+            block_started = false
+         end
+      elseif is_blank(line) then
+         block_started = true
       end
    end
-end
-
-
----Return lpeg pattern for doxygen command.
----@param command string # Doxygen command.
----@return Pattern
-function Doxy:make_pattern(command)
-   return (ws * lpeg.P('---') *
-      ws * lpeg.P(command) *
-      (ws * lpeg.C(lpeg.P(1) ^ 0)) ^ -1)
+   content = content .. block -- If EOF follows comment block immediately.
+   return content
 end
 
 

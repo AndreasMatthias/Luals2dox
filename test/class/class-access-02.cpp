@@ -1,3 +1,9 @@
+/// This is ClassB.
+/// @class ClassB
+/// @field private privateField integer This is a `private` field.
+/// @field protected protectedField integer This is a `protected` field.
+/// @field publicField integer This is a `public` field.
+
 ///
 /// @class ClassB
 ///

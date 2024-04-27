@@ -6,3 +6,4 @@
 /luacov.report.out
 /luacov.report.out.index
 /*.run
+/var/tmp_file.lua

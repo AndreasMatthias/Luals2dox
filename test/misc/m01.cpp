@@ -1,3 +1,4 @@
+/// @diagnostic disable:lowercase-global
 /// @file
 /// The following empty lines must not be removed!
 /// 

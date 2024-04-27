@@ -1,3 +1,4 @@
+/// @diagnostic disable:lowercase-global
 /// @file
 /// Same variable names as in `arr-01.lua`.
 

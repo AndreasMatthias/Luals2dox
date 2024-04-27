@@ -23,7 +23,7 @@ Create a standard ~Doxyfile~ with
 #+begin_src shell
 $ doxygen -g
 #+end_src
-and edit this file as described in Section [[sec:configuration][Configuration of Doxygen]].
+and edit this file as described in Section [[*Configuration in Doxygen]].
 
 **** File ~doc.json~
 

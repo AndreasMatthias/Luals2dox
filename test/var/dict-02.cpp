@@ -1,5 +1,10 @@
+/// @diagnostic disable:lowercase-global
 /// @file
 /// Same variable names as in `dict-01.lua`.
+
+/// The `table` type is identical to the `dictionary` type.
+/// But the syntax to define `table` and `dictionary` in LuaLS
+/// is different. Nevertheless the JSON output is the same.
 
 /// @brief
 /// Dictionary: string -> integer. (Another one with the same name.)

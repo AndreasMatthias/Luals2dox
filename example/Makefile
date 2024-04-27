@@ -8,3 +8,5 @@ html/index.html: $(lua-files)
 clean:
 	rm -rf html/ latex/
 distclean: clean
+
+coverage:
