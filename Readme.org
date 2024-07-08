@@ -7,7 +7,6 @@ Luals2dox is an input filter for [[https://doxygen.nl/][Doxygen]] that filters L
 Lua files shall be annotated for use with LuaLS, the [[https://github.com/luals/lua-language-server][Lua Language Server]], that is a
 necessary requirement for Luals2dox.
 
-
 * Usage
 
 **** Required files
@@ -23,7 +22,7 @@ Create a standard ~Doxyfile~ with
 #+begin_src shell
 $ doxygen -g
 #+end_src
-and edit this file as described in Section [[*Configuration in Doxygen]].
+and edit this file as described in Section [[#configuration-in-doxygen][Configuration in Doxygen]]. 
 
 **** File ~doc.json~
 
@@ -45,6 +44,9 @@ All you have to do to update the documentation is to rerun Doxygen. You do not n
 
 
 * Configuration in Doxygen
+:PROPERTIES:
+:CUSTOM_ID: configuration-in-doxygen
+:END:
 
 For using luals2dox in Doxygen apply the following configuration settings, either manually or by using doxywizard.
 
