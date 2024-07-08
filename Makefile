@@ -16,8 +16,8 @@ doc:
 	doxygen
 
 
-rockspec_latest := rockspecs/$(shell ls -v rockspecs/ | tail -n2 | head -n1)
-rockspec_dev := rockspecs/$(shell ls -v rockspecs/ | tail -n1)
+rockspec_latest := rockspecs/$(shell ls -v rockspecs/ | grep 'luals2dox-[[:digit:]]' | tail -n1)
+rockspec_dev := rockspecs/$(shell ls -v rockspecs/ | grep 'luals2dox-scm' | tail -n1)
 
 .PHONY: install uninstall
 install:
