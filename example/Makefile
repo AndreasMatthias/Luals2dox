@@ -6,7 +6,7 @@ html/index.html: $(lua-files)
 
 .PHONY: clean distclean
 clean:
-	rm -rf html/ latex/
+	rm -rf html/ latex/ doc.json doc.md
 distclean: clean
 
 coverage:
