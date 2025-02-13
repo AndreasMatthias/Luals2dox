@@ -32,7 +32,7 @@ local argparse = require('argparse')
 local ArgParser = argparse()
    :name('luals2dox')
    :description('Doxygen filter for lua files composed with LuaLS annotations.')
-   :epilog('For more info, see http://github.com/xxx')
+   :epilog('For more info, see http://github.com/AndreasMatthias/Luals2dox')
 
 ArgParser:option('-a --all-files')
    :description('Document all files. This adds @file to each file.')

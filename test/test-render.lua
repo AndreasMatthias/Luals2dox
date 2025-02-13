@@ -18,7 +18,7 @@ for idx = 1, #arg do
 end
 
 local say = require('say')
-local diff = require('diff')
+local diff = require('diff') -- https://bitbucket.org/spilt/luadiffer
 local lfs = require('lfs')
 
 local checking_file = ''
@@ -32,8 +32,8 @@ local function strings_equal(_, argument)
       return true
    else
       print(err)
-      print(string.format('\027[1;34mDiff: passed in -> expected (%s)\027[1;0m', checking_file))
-      diff(actual, expected):print()
+      print(string.format('\027[1;34mDiff: expected->actual (%s)\027[1;0m', checking_file))
+      diff(expected, actual):print()
       return false
    end
 end

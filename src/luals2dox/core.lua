@@ -359,6 +359,9 @@ end
 ---@param file string # file name.
 ---@return boolean
 function Doxy:is_current_lua_file(file)
+   if not file then
+      return false
+   end
    file = self:urldecode(file)
    file = file:gsub(self.file_scheme, '')
    file = fs.realpath(file)
@@ -415,7 +418,7 @@ function Doxy:render_doc_class_definition(section, idx)
    ---@diagnostic disable: unused-local
    local classname = section.name
    local parent = self:get_inherited_classes(definition)
-   local desc = self:description(section.rawdesc)
+   local desc = self:description(definition.rawdesc)
    local fields = ''
    for _, field in ipairs(section.fields) do
       fields = fields .. self:render_doc_class_field(field)
@@ -678,12 +681,11 @@ end
 function Doxy:render_function(section, name)
    ---@diagnostic disable: unused-local
    local func_name = name
-   local extends = section.extends
-   local desc = self:description(extends.rawdesc)
-   local args = self:get_args(extends.args)
-   local returns = self:get_returns(extends.returns)
-   local deprecated = extends.deprecated and '@deprecated' or ''
-   local async = extends.async and '@async' or ''
+   local desc = self:description(section.rawdesc)
+   local args = self:get_args(section.extends.args)
+   local returns = self:get_returns(section.extends.returns)
+   local deprecated = section.deprecated and '@deprecated' or ''
+   local async = section.async and '@async' or ''
    local template_def = ''
    if next(args.templates) then
       template_def = string.format('template <typename %s>',
@@ -830,11 +832,10 @@ end
 ---@param name string # Variable name.
 ---@return string
 function Doxy:render_variable(section, name)
-   local extends = section.extends
    ---@diagnostic disable: unused-local
    local var_name = name
-   local vartype = sanitize_arg_type(extends.view)
-   local desc = self:description(extends.rawdesc)
+   local vartype = sanitize_arg_type(section.extends.view)
+   local desc = self:description(section.rawdesc)
    ---@diagnostic enable: unused-local
    local content = trim(f [[
       /// @brief
