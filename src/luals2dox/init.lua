@@ -1,5 +1,5 @@
 --
--- Copyright (C) 2024 Andreas MATTHIAS
+-- Copyright (C) 2024-2025 Andreas MATTHIAS
 --
 -- This file is part of Luals2dox.
 --

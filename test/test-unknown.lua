@@ -51,28 +51,6 @@ local function test(json, warning_msg)
 end
 
 
-local function getOS()
-   if package.config:sub(1, 1) == '\\' then
-      return 'Windows'
-   else
-      return io.popen('uname -s', 'r'):read()
-   end
-end
-
-
-local function fileURL(rel_path)
-   if getOS() == 'Windows' then
-      local cwd = path.abspath('.')
-      cwd = cwd:sub(1, 1):lower() .. cwd:sub(2)
-      cwd = cwd:gsub('\\', '/')
-      return 'file:///' .. cwd .. '/' .. rel_path
-   else
-      local cwd = path.abspath('.')
-      return 'file://' .. cwd .. '/./' .. rel_path
-   end
-end
-
-
 describe('JSON file:', function()
    assert:set_parameter('TableFormatLevel', 0)
 
@@ -81,7 +59,7 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = fileURL('var/var-01.lua'),
+                  ['file'] = 'var/var-01.lua',
                   ['type'] = 'XXX'
                }
             },
@@ -95,13 +73,13 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = fileURL('var/var-01.lua'),
+                  ['file'] = 'var/var-01.lua',
                   ['type'] = 'doc.class'
                }
             },
             ['fields'] = {
                {
-                  ['file'] = fileURL('var/var-01.lua'),
+                  ['file'] = 'var/var-01.lua',
                   ['type'] = 'XXX'
                }
             },
@@ -115,13 +93,13 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = fileURL('var/var-01.lua'),
+                  ['file'] = 'var/var-01.lua',
                   ['type'] = 'doc.class'
                }
             },
             ['fields'] = {
                {
-                  ['file'] = fileURL('var/var-01.lua'),
+                  ['file'] = 'var/var-01.lua',
                   ['type'] = 'setmethod',
                   ['extends'] = {
                      ['type'] = 'XXX'
@@ -138,13 +116,13 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = fileURL('var/var-01.lua'),
+                  ['file'] = 'var/var-01.lua',
                   ['type'] = 'doc.class'
                }
             },
             ['fields'] = {
                {
-                  ['file'] = fileURL('var/var-01.lua'),
+                  ['file'] = 'var/var-01.lua',
                   ['type'] = 'doc.field',
                   ['extends'] = {
                      ['type'] = 'XXX'
@@ -161,7 +139,7 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = fileURL('var/var-01.lua'),
+                  ['file'] = 'var/var-01.lua',
                   ['type'] = 'doc.enum'
                }
             },
@@ -175,7 +153,7 @@ describe('JSON file:', function()
          {
             ['defines'] = {
                {
-                  ['file'] = fileURL('var/var-01.lua'),
+                  ['file'] = 'var/var-01.lua',
                   ['type'] = 'doc.class',
                   ['extends'] = {
                      {

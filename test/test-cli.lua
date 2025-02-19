@@ -41,7 +41,7 @@ end
 describe('CLI arguments:', function()
    it('Lua file missing/not found', function()
       helper.remove_file('doc.json')
-      helper.link_file('json/doc.json', 'doc.json')
+      helper.copy_file('json/doc.json', 'doc.json')
       assert.has_error(
          function() test({}) end,
          "missing argument 'file.lua'")
@@ -52,7 +52,7 @@ describe('CLI arguments:', function()
 
    it('--list-config', function()
       helper.remove_file('doc.json')
-      helper.link_file('json/empty.json', 'doc.json')
+      helper.copy_file('json/empty.json', 'doc.json')
       local print_stub = stub(_G, 'print')
       assert.has_error(
          function() test({'-l'}) end,
@@ -62,7 +62,7 @@ describe('CLI arguments:', function()
          "Section 'luals.config' missing in JSON file.")
 
       helper.remove_file('doc.json')
-      helper.link_file('json/doc.json', 'doc.json')
+      helper.copy_file('json/doc.json', 'doc.json')
       assert.has_no_error(
          function() test({'-l'}) end)
       print_stub:revert()
@@ -78,7 +78,7 @@ describe('CLI arguments:', function()
    it('Cannot open JSON file', function()
       local function test_here()
          helper.remove_file('doc.json')
-         helper.link_file('json/doc.json', 'doc.json')
+         helper.copy_file('json/doc.json', 'doc.json')
          arg[1] = './var/var-01.lua'
          -- Mock error function of argparse.
          local args = require('luals2dox.args')
@@ -102,27 +102,26 @@ describe('CLI arguments:', function()
       -- For code coverage statistics we want to run the part of the code
       -- that updated `doc.json`. This is the only reason for this test.
       helper.remove_file('doc.json')
-      helper.link_file('json/doc.json', 'doc.json')
+      helper.copy_file('json/doc.json', 'doc.json')
       local tmp_lua_file = 'tmp_file.lua'
       io.open(tmp_lua_file, 'w'):close()
+
       assert.has_no_error(
          function() test({tmp_lua_file}) end)
       helper.remove_file(tmp_lua_file)
    end)
 
    it('--lua-language-server', function()
-      local tmp_lua_file = 'var/tmp_file.lua'
-      helper.remove_file(tmp_lua_file)
       helper.remove_file('doc.json')
-      helper.link_file('json/doc.json', 'doc.json')
-      helper.sleep(.5)
+      helper.copy_file('json/doc.json', 'doc.json')
+      local tmp_lua_file = 'var/tmp_file.lua'
       io.open(tmp_lua_file, 'w'):close()
       assert.error_matches(
          function()
-            test({'--lua-language-server', 'wrong-binary', tmp_lua_file})
+            test({'--lua-language-server', 'wrong-luals-binary', tmp_lua_file})
          end,
          'Updating JSON file failed %(exit, %d+%).')
---      helper.remove_file(tmp_lua_file)
+      helper.remove_file(tmp_lua_file)
    end)
 
    it('--all-files', function()

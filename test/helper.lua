@@ -48,27 +48,16 @@ if getOS() == 'Windows' then
    M.copy_file = function(old, new)
       os.execute(string.format('copy %s %s > null', dos_fn(old), dos_fn(new)))
    end
-   M.link_file = function(target, link)
-      M.copy_file(dos_fn(target), dos_fn(link))
-   end
    M.remove_file = function(file)
-      -- If we don't wait here, we'll get "The process cannot access the file
-      -- because it is being used by another process."
-      M.winsleep(1)
-      os.execute(string.format('if exist %s (del /f %s)', file, file))
+      os.remove(dos_fn(file))
    end
-   M.winsleep = M.sleep
 else
    M.copy_file = function(old, new)
-      os.execute(string.format('cp %s %s', old, new))
-   end
-   M.link_file = function(target, link)
-      os.execute(string.format('ln %s %s', target, link))
+      os.execute(string.format('cp -p %s %s', old, new))
    end
    M.remove_file = function(file)
-      os.execute(string.format('rm -f %s', file))
+      os.remove(file)
    end
-   M.winsleep = function(s) end
 end
 
 

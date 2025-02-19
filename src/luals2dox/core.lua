@@ -1,5 +1,5 @@
 --
--- Copyright (C) 2024 Andreas MATTHIAS
+-- Copyright (C) 2024-2025 Andreas MATTHIAS
 --
 -- This file is part of Luals2dox.
 --
@@ -160,10 +160,8 @@ function Doxy:init()
       return
    end
    if self:getOS() == 'Windows' then
-      self.file_scheme = '^file:///' --- File scheme
       self.device_null = 'null' --- Device null
    else
-      self.file_scheme = '^file://'
       self.device_null = '/dev/null'
    end
    self:set_lua_file()
@@ -197,22 +195,9 @@ function Doxy:set_lua_file()
       self.arg_parser:error("missing argument 'file.lua'")
    end
    self.lua_file = fs.realpath(self.args['file.lua']) --[[@as string]] --Lua file name.
-   self.lua_file = self:windows_drive_letter_lowercase(self.lua_file)
    if not fs.isfile(self.lua_file) then
       self.arg_parser:error(string.format('Lua file \'%s\' not found.', self.args['file.lua']))
    end
-end
-
-
----Convert first character of `file` to lowercase.
----
----The file name must be an absolute path.
----In Windows the first character is the drive letter.
----In Linux the first character is a slash.
----@param file string # File name
----@return string
-function Doxy:windows_drive_letter_lowercase(file)
-   return file and file:sub(1, 1):lower() .. file:sub(2)
 end
 
 
@@ -232,10 +217,12 @@ function Doxy:load_json_file()
    local fd = io.open(self.json_file)
    if not fd then
       self.arg_parser:error(string.format('Cannot open file \'%s\'.', self.args['json']))
+      os.exit()
    end
    ---@diagnostic disable-next-line:need-check-nil
    local text = fd:read('*all')
    self.doc_json = cjson.decode(text) --[[@as table]] --JSON data.
+   fd:close()
 end
 
 
@@ -271,10 +258,10 @@ function Doxy:update_json()
    local stat_json = fs.lstat_mtime(self.json_file)
    if stat_json < stat_lua then
       os.rename(self.json_file, 'doc.json') -- LuaLS expects 'doc.json'.
-      local ok, state, errno =
-         os.execute(string.format('%s --doc_update > %s',
-                                  self.args.lua_language_server,
-                                  self.device_null))
+      local cmd = string.format('%s --doc_update > %s',
+                                self.args.lua_language_server,
+                                self.device_null)
+      local ok, state, errno = os.execute(cmd)
       if not ok then
          os.rename('doc.json', self.json_file)
          self.arg_parser:error(string.format(
@@ -363,7 +350,6 @@ function Doxy:is_current_lua_file(file)
       return false
    end
    file = self:urldecode(file)
-   file = file:gsub(self.file_scheme, '')
    file = fs.realpath(file)
    if file == self.lua_file then
       return true

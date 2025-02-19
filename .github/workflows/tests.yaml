@@ -70,17 +70,17 @@ jobs:
         submodules: recursive
         path: LuaLS
 
-    # Compile LuaLS
-    - name: Compile LuaLS
+    # Compile LuaLS (Linux, MacOS)
+    - name: Compile LuaLS (Linux, MacOS)
       if: ${{ runner.os == 'Linux' || runner.os == 'MacOS' }}
       run: |
         cd LuaLS
         bash make.sh
         echo "${{github.workspace}}/LuaLS/bin/" >> $GITHUB_PATH
 
-    # Compile LuaLS
+    # Compile LuaLS (Windows)
     # Compiling without tests. LuaLS tests are currently not working in Windows.
-    - name: Compile LuaLS
+    - name: Compile LuaLS (Windows)
       if: ${{ runner.os == 'Windows' }}
       run: |
         cd LuaLS
