@@ -34,6 +34,10 @@ local ArgParser = argparse()
    :description('Doxygen filter for lua files composed with LuaLS annotations.')
    :epilog('For more info, see http://github.com/AndreasMatthias/Luals2dox')
 
+ArgParser:option('-v --version')
+   :description('Print version number.')
+   :args(0)
+
 ArgParser:option('-a --all-files')
    :description('Document all files. This adds @file to each file.')
    :args(0)

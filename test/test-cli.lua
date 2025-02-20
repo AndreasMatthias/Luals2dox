@@ -54,13 +54,10 @@ describe('CLI arguments:', function()
       helper.remove_file('doc.json')
       helper.copy_file('json/empty.json', 'doc.json')
       local print_stub = stub(_G, 'print')
-      assert.has_error(
-         function() test({'-l'}) end,
-         "Section 'luals.config' missing in JSON file.")
-      assert.has_error(
-         function() test({'--list-config'}) end,
-         "Section 'luals.config' missing in JSON file.")
-
+      assert.has_no_error(
+         function() test({'-l'}) end)
+      assert.has_no_error(
+         function() test({'--list-config'}) end)
       helper.remove_file('doc.json')
       helper.copy_file('json/doc.json', 'doc.json')
       assert.has_no_error(

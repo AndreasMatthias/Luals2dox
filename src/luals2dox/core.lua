@@ -139,8 +139,9 @@ function Doxy:new()
    local t = {}
    setmetatable(t, self)
    self.__index = self
+   t.exit_early = false
    Doxy.init(t)
-   if t.args['list_config'] then
+   if t.exit_early then
       return nil
    end
    return t
@@ -153,10 +154,15 @@ end
 function Doxy:init()
    self.arg_parser = require('luals2dox.args')
    self.args = self.arg_parser:parse() --[[@as table]] ---CLI arguments
-   self:set_json_file()
-   self:load_json_file()
+   if self.args['version'] then
+      print('0.3-3')
+      self.exit_early = true
+      return
+   end
    if self.args['list_config'] then
+      self:set_json_file(true)
       self:list_config()
+      self.exit_early = true
       return
    end
    if self:getOS() == 'Windows' then
@@ -164,6 +170,8 @@ function Doxy:init()
    else
       self.device_null = '/dev/null'
    end
+   self:set_json_file()
+   self:load_json_file()
    self:set_lua_file()
    self:update_json()
 end
@@ -202,11 +210,16 @@ end
 
 
 ---Set json file (`self.json_file`) with error checking.
+---@param no_error? boolean # No error message if doc.json missing
 ---@return nil
-function Doxy:set_json_file()
+function Doxy:set_json_file(no_error)
    self.json_file = fs.realpath(self.args['json']) --[[@as string]] --JSON file name.
    if not fs.isfile(self.json_file) then
-      self.arg_parser:error(string.format('JSON file \'%s\' not found.', self.args['json']))
+      if no_error then
+         self.json_file = ''
+      else
+         self.arg_parser:error(string.format('JSON file \'%s\' not found.', self.args['json']))
+      end
    end
 end
 
@@ -217,7 +230,7 @@ function Doxy:load_json_file()
    local fd = io.open(self.json_file)
    if not fd then
       self.arg_parser:error(string.format('Cannot open file \'%s\'.', self.args['json']))
-      os.exit()
+      os.exit(0)
    end
    ---@diagnostic disable-next-line:need-check-nil
    local text = fd:read('*all')
@@ -232,13 +245,6 @@ function Doxy:list_config()
    self:print_config_item('Binary', self.args.lua_language_server)
    self:print_config_item('Working directory', fs.getcwd())
    self:print_config_item('JSON file', self.json_file)
-   for _, section in ipairs(self.doc_json) do
-      if section.type == 'luals.config' then
-         self:print_config_item('JSON root path', section.DOC)
-         return
-      end
-   end
-   self.arg_parser:error('Section \'luals.config\' missing in JSON file.')
 end
 
 
